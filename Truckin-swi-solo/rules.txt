@@ -1,0 +1,118 @@
+Introduction to Truckin'
+
+Truckin' is a board game like monopoly where several players buy and
+sell commodities attempting to amass the greatest profit by the
+end of the game. It could be played by humans, but here each player
+writes a program which decides each move. The programs are frozen before
+each game, so there is no human intervention. The game was invented
+by Mark Stefik and other Expert System researchers at Xerox Palo Alto
+Research Centre early in 1983. They called it a "knowledge competition",
+based on the assumption that the most knowledgable player wins.
+
+Here is a sample board:
+
+      Name          Action     Commodity        Amount     Price
+
+  Parramatta      start         Nothing                0         0
+  Coop Bookshop   buyer         Books                261     34496
+  Dip             hazard        Nothing                0         0
+  UNSW            buyer         VAXes                  4  28105033
+  Perth Mint      seller        Gold Bars           3368     38298
+  Axle check      weigh         Nothing                0         0
+  ESR             buyer         TVs                   30     47112
+  Prouds          buyer         Diamonds             158     38000
+  Alices          finish        Nothing                0         0
+
+The prices are in cents.
+
+This information is available in Prolog format, see
+%6.606/truckin/world.prolog. At each new turn, the players' programs
+examine this information and each suggests the next move.  To run your
+program type:
+
+	%6.606/bin/truckin <your program>
+
+This will deal up a board and maintain it according to the moves you
+make. The referee program asks for your move with a goal such as
+
+	move(claude, Type, Quantity)?
+
+Your program should contain a rule called move which will instantiate
+Type with either the atom 'm' or 't' (indicating Move or Transact), and
+Quantity with an integer (this may be negative only if Move is 'm').
+'m' indicates 'move'.  The first argument must be a name which uniquely
+identifies your truck.  For example, move(claude,m,3) means move 3
+spaces forward, move(claude,m,-6) means move 6 spaces backwards and "m
+0" means stay put.  The maximum number of places which can be traversed
+in one turn is 8.  't' indicates transfer: you buy if you are on a
+seller and sell if you are on a buyer.  For example, if you are on "De
+Beers" (whose type is a seller and whose commodity is diamonds), and
+you issue the command move(claude,t,10) you get 10 diamonds added to
+the list of things you are holding, and the quantity of diamonds that
+DeBeers is willing to sell is decreased by 10.  When there is more than
+one trucker trying to transact at the same place, the shopkeeper will
+select a random ordering of the players and trade 1 unit at a time in a
+round-robin fashion.  This makes it as fair as possible, and chance
+only enters into it on the rare occasion when 2 truckers are both
+trying to get the last of a big-ticket item (such as a VAX).
+
+Everone starts at the place designated "start" (currently Parramatta
+Rd) with the same amount of money (currently $1000). At the end of a
+set number of moves (currently 180) they must be sitting at a place
+designated "finished" currently "Alice's".  The player with the most
+money wins.
+
+There are many things to watch out for on the way. It is necessary to
+buy fuel occasionally. One unit (litre)
+of fuel is consumed per square moved.
+
+The following is a statement of intent for the nature and behaviour of
+the world.  The word "invariant" means known before program submission.
+The word "set" means set according to an invariant algorithm after
+program submission and thereafter not changed.
+The word "some" means possibly different at every move.  
+
+For example, place names are taken from a (fairly stable) list,
+and are placed randomly around the board at the start of each game.
+All places have unique invariant names of no more than 14 characters
+consisting of alpha-numerics and spaces.  Cases are distinct.  All places
+are of an invariant type.  These are: 
+
+start	All players start here.  No other function.
+seller	Will sell up to some number of an invariant commodity at a set price.
+buyer	Will buy up to some number of an invariant commodity at a set price.
+weigh	Will extract tax at a set proportion of weight of load. (unimplemented)
+hazard	Will cause obnoxious behaviour. (NB: uninplemented).
+finish	Being here at the end is one of the winning conditions.
+tip	This is a tip, which will buy anything  at a negative price
+
+Be warned that if you go to the tip with more than one commodity in your truck,
+the labourers there will chose a random thing to take. Of couse you can
+specify the quantity to be dropped.
+
+Things have names obeying the same rules as place names.  Things
+have the following properties:
+
+volume	An invariant volume in millilitres of one unit of the thing.
+weight	An invariant weight in grammes of one unit of the thing.
+
+Players have names obeying the same rules as place names.  Players
+have the following properties:
+
+where	Some place.
+cash	Some amount of money in cents.
+volume	Some remaining truck capacity in millilitres.
+weight	Some remaining truck capacity in grammes.
+fuel	Some remaining fuel in litres.
+
+
+Note that both "weigh" and "hazard" places have no effect,
+so you can pass through or stop there as you wish.
+
+Explanation of miscellaneous information
+
+can_carry(3000000). % maximum weight of each truck
+can_hold(20000000). % maximum volume of each truck
+max_fuel(100).	% maximum number of units of fuel a truck can carry
+last_stop(63).	% the number of the highest-numbered stop (lowest is 0)
+moves_remaining(97). % number of moves remaining, players will never see 0 here.
